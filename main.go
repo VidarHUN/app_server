@@ -16,13 +16,28 @@ func setupHandler() http.Handler {
 	mux.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			fmt.Fprintf(w, "GET request handled\n")
+			fmt.Fprintf(w, "GET /room request handled\n")
 		case http.MethodPost:
-			fmt.Fprintf(w, "POST request handled\n")
+			fmt.Fprintf(w, "POST /room request handled\n")
 		case http.MethodPatch:
-			fmt.Fprintf(w, "PATCH request handled\n")
+			fmt.Fprintf(w, "PATCH /room request handled\n")
 		case http.MethodDelete:
-			fmt.Fprintf(w, "DELETE request handled\n")
+			fmt.Fprintf(w, "DELETE /room request handled\n")
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/room/participants", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			fmt.Fprintf(w, "GET /room/participants request handled\n")
+		case http.MethodPost:
+			fmt.Fprintf(w, "POST /room/participants request handled\n")
+		case http.MethodPatch:
+			fmt.Fprintf(w, "PATCH /room/participants request handled\n")
+		case http.MethodDelete:
+			fmt.Fprintf(w, "DELETE /room/participants request handled\n")
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
@@ -32,11 +47,6 @@ func setupHandler() http.Handler {
 }
 
 func main() {
-	// Start a goroutine which serve a HTTP server on localhost:6060
-	// go func() {
-	// 	log.Println(http.ListenAndServe("localhost:8080", nil))
-	// }()
-
 	handler := setupHandler()
 	quicConf := &quic.Config{}
 
@@ -47,7 +57,7 @@ func main() {
 		QuicConfig: quicConf,
 	}
 	fmt.Printf("Running on port 8443\n")
-	err = server.ListenAndServeTLS("server.crt", "server.key")
+	err = server.ListenAndServeTLS("localhost.crt", "localhost.key")
 	if err != nil {
 		fmt.Println(err)
 	}
