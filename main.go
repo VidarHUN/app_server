@@ -8,6 +8,7 @@ import (
 
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
+	"github.com/redis/go-redis/v9"
 )
 
 func setupHandler() http.Handler {
@@ -47,10 +48,18 @@ func setupHandler() http.Handler {
 }
 
 func main() {
+	var err error
+	var client *redis.Client
+
+	client, err = NewRedisClient("localhost:6379", "", 0)
+	if err != nil {
+		fmt.Println(err)
+	}
+	client.Close()
+
 	handler := setupHandler()
 	quicConf := &quic.Config{}
 
-	var err error
 	server := http3.Server{
 		Handler:    handler,
 		Addr:       "localhost:8443",
