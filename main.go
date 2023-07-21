@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -11,34 +12,118 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type Room struct {
+	Id    string `json:"id"`
+	Users []User `json:"users"`
+}
+
+type User struct {
+	Id string `json:"id"`
+}
+
+func errorToBytes(err error) []byte {
+	if err == nil {
+		return []byte("")
+	}
+
+	errBytes, err := json.Marshal(err)
+	if err != nil {
+		return []byte("")
+	}
+
+	return errBytes
+}
+
+func handleRoomGet(w http.ResponseWriter) {
+	// Dummy data
+	room := &Room{Id: "DummyRoom"}
+	room.Users = append(room.Users, User{Id: "DummyUser"})
+	byteRoom, err := json.Marshal(room)
+	if err != nil {
+		w.Write(errorToBytes(err))
+	}
+	w.Write(byteRoom)
+}
+
+func handleRoomPost(r *http.Request) {
+	fmt.Println(r.Body)
+}
+
+func handleRoomPatch(w http.ResponseWriter, id string) {
+	// Dummy data
+	room := &Room{Id: id}
+	room.Users = append(room.Users, User{Id: "DummyUser"})
+	byteRoom, err := json.Marshal(room)
+	if err != nil {
+		w.Write(errorToBytes(err))
+	}
+	w.Write(byteRoom)
+}
+
+func handleRoomDelete(w http.ResponseWriter, id string) {
+	w.Write([]byte(id + "room deleted"))
+}
+
+func handleUserGet(w http.ResponseWriter) {
+	// Dummy data
+	user := &User{Id: "DummyUser"}
+	byteUser, err := json.Marshal(user)
+	if err != nil {
+		w.Write(errorToBytes(err))
+	}
+	w.Write(byteUser)
+}
+
+func handleUserPost(r *http.Request) {
+	fmt.Println(r.Body)
+}
+
+func handleUserPatch(w http.ResponseWriter, id string) {
+	// Dummy data
+	user := &User{Id: id}
+	byteUser, err := json.Marshal(user)
+	if err != nil {
+		w.Write(errorToBytes(err))
+	}
+	w.Write(byteUser)
+}
+
+func handleUserDelete(w http.ResponseWriter, id string) {
+	w.Write([]byte(id + "user deleted"))
+}
+
 func setupHandler() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			fmt.Fprintf(w, "GET /room request handled\n")
+			handleRoomGet(w)
 		case http.MethodPost:
-			fmt.Fprintf(w, "POST /room request handled\n")
+			handleRoomPost(r)
 		case http.MethodPatch:
-			fmt.Fprintf(w, "PATCH /room request handled\n")
+			id := r.URL.Query().Get("id")
+			handleRoomPatch(w, id)
 		case http.MethodDelete:
-			fmt.Fprintf(w, "DELETE /room request handled\n")
+			id := r.URL.Query().Get("id")
+			handleRoomDelete(w, id)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
-	mux.HandleFunc("/room/participants", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/room/users", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			fmt.Fprintf(w, "GET /room/participants request handled\n")
+			handleUserGet(w)
 		case http.MethodPost:
-			fmt.Fprintf(w, "POST /room/participants request handled\n")
+			handleUserPost(r)
 		case http.MethodPatch:
-			fmt.Fprintf(w, "PATCH /room/participants request handled\n")
+			id := r.URL.Query().Get("id")
+			handleUserPatch(w, id)
 		case http.MethodDelete:
-			fmt.Fprintf(w, "DELETE /room/participants request handled\n")
+			id := r.URL.Query().Get("id")
+			handleUserDelete(w, id)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
