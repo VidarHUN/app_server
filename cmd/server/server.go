@@ -10,6 +10,8 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/VidarHUN/app_server/internal/db"
 )
 
 type Room struct {
@@ -136,7 +138,7 @@ func main() {
 	var err error
 	var client *redis.Client
 
-	client, err = NewRedisClient("localhost:6379", "", 0)
+	client, err = db.NewRedisClient("localhost:6379", "", 0)
 	if err != nil {
 		fmt.Println(err)
 	}
