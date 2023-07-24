@@ -13,12 +13,6 @@ import (
 )
 
 func main() {
-
-	// pool, err := x509.SystemCertPool()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	var qconf quic.Config
 	roundTripper := &http3.RoundTripper{
 		TLSClientConfig: &tls.Config{
