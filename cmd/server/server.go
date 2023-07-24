@@ -11,16 +11,8 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	"github.com/VidarHUN/app_server/internal/db"
+	"github.com/VidarHUN/app_server/internal/handlers"
 )
-
-type Room struct {
-	Id    string `json:"id"`
-	Users []User `json:"users"`
-}
-
-type User struct {
-	Id string `json:"id"`
-}
 
 func setupHandler() http.Handler {
 	mux := http.NewServeMux()
@@ -28,15 +20,15 @@ func setupHandler() http.Handler {
 	mux.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			handlers.handleRoomGet(w)
+			handlers.RoomGet(w)
 		case http.MethodPost:
-			handleRoomPost(r)
+			handlers.RoomPost(r)
 		case http.MethodPatch:
 			id := r.URL.Query().Get("id")
-			handleRoomPatch(w, id)
+			handlers.RoomPatch(w, id)
 		case http.MethodDelete:
 			id := r.URL.Query().Get("id")
-			handleRoomDelete(w, id)
+			handlers.RoomDelete(w, id)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
@@ -45,15 +37,15 @@ func setupHandler() http.Handler {
 	mux.HandleFunc("/room/users", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			handleUserGet(w)
+			handlers.UserGet(w)
 		case http.MethodPost:
-			handleUserPost(r)
+			handlers.UserPost(r)
 		case http.MethodPatch:
 			id := r.URL.Query().Get("id")
-			handleUserPatch(w, id)
+			handlers.UserPatch(w, id)
 		case http.MethodDelete:
 			id := r.URL.Query().Get("id")
-			handleUserDelete(w, id)
+			handlers.UserDelete(w, id)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}

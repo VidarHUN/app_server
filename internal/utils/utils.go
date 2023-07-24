@@ -2,7 +2,7 @@ package utils
 
 import "encoding/json"
 
-func errorToBytes(err error) []byte {
+func ErrorToBytes(err error) []byte {
 	if err == nil {
 		return []byte("")
 	}
