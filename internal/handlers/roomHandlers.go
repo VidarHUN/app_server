@@ -20,8 +20,22 @@ func RoomGet(w http.ResponseWriter) {
 	w.Write(byteRoom)
 }
 
-func RoomPost(r *http.Request) {
-	fmt.Println(r.Body)
+func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
+	// Create a new struct to hold the request body.
+	room := db.Room{Id: utils.GenerateRandomID(5)}
+	user := db.User{}
+
+	// Unmarshal the request body into the struct.
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	room.Users = append(room.Users, user)
+	*rooms = append(*rooms, room)
+
+	w.Write([]byte(room.Id + "room created"))
 }
 
 func RoomPatch(w http.ResponseWriter, id string) {

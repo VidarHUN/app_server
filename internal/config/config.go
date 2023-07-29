@@ -34,7 +34,7 @@ func ReadConfig(path string) Configurations {
 
 	// Set undefined variables
 	viper.SetDefault("quicrq.address", "127.0.0.1")
-	viper.SetDefault("quicrq.port", 8443)
+	viper.SetDefault("quicrq.port", 3000)
 	viper.SetDefault("database.address", "127.0.0.1")
 	viper.SetDefault("database.port", 6379)
 

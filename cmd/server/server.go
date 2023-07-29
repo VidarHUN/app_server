@@ -16,6 +16,8 @@ import (
 	"github.com/VidarHUN/app_server/internal/handlers"
 )
 
+var rooms []db.Room
+
 func setupHandler() http.Handler {
 	mux := http.NewServeMux()
 
@@ -24,7 +26,7 @@ func setupHandler() http.Handler {
 		case http.MethodGet:
 			handlers.RoomGet(w)
 		case http.MethodPost:
-			handlers.RoomPost(r)
+			handlers.RoomPost(w, r, &rooms)
 		case http.MethodPatch:
 			id := r.URL.Query().Get("id")
 			handlers.RoomPatch(w, id)
