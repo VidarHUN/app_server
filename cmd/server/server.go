@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/quic-go/quic-go/http3"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/handlers"
 )
@@ -57,8 +59,14 @@ func setupHandler() http.Handler {
 func main() {
 	var err error
 	var client *redis.Client
+	var path string
 
-	client, err = db.NewRedisClient("localhost:6379", "", 0)
+	flag.StringVar(&path, "path", ".", "Directory of config")
+	flag.Parse()
+	configuration := config.ReadConfig(path)
+
+	redisAddress := configuration.Database.Address + ":" + string(configuration.Database.Port)
+	client, err = db.NewRedisClient(redisAddress, "", 0)
 	if err != nil {
 		fmt.Println(err)
 	}
