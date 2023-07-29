@@ -35,7 +35,12 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 	room.Users = append(room.Users, user)
 	*rooms = append(*rooms, room)
 
-	w.Write([]byte(room.Id + "room created"))
+	b, err := json.Marshal(room)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	w.Write(b)
 }
 
 func RoomPatch(w http.ResponseWriter, id string) {

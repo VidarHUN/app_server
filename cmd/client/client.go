@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/VidarHUN/app_server/internal/db"
@@ -15,27 +14,38 @@ import (
 	"github.com/quic-go/quic-go/http3"
 )
 
+var rooms []db.Room
+
 func roomPost(hclient *http.Client) {
 	user := db.User{Id: utils.GenerateRandomID(5)}
 
 	b, err := json.Marshal(user)
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
 	rsp, err := hclient.Post("https://localhost:8443/room", "application/json", bytes.NewReader(b))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	body := &bytes.Buffer{}
 	_, err = io.Copy(body, rsp.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
+
+	var room = db.Room{}
+	// Unmarshal the response body into the struct.
+	err = json.NewDecoder(body).Decode(&room)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	fmt.Println("Response Body:")
-	fmt.Println(string(body.Bytes()))
+	fmt.Println(room)
+
+	rooms = append(rooms, room)
 }
 
 func main() {
