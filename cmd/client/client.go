@@ -2,17 +2,21 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
-	"github.com/quic-go/quic-go"
-	"github.com/quic-go/quic-go/http3"
+
+	"github.com/gorilla/websocket"
 )
+
+// var upgrader = websocket.Upgrader{} // use default options
 
 var rooms []db.Room
 
@@ -49,18 +53,69 @@ func roomPost(hclient *http.Client) {
 }
 
 func main() {
-	var qconf quic.Config
-	roundTripper := &http3.RoundTripper{
-		TLSClientConfig: &tls.Config{
-			RootCAs:            nil,
-			InsecureSkipVerify: true,
-		},
-		QuicConfig: &qconf,
-	}
-	defer roundTripper.Close()
-	hclient := &http.Client{
-		Transport: roundTripper,
+	// quicConf := &quic.Config{
+	// 	KeepAlivePeriod: 60,
+	// }
+	// roundTripper := &http3.RoundTripper{
+	// 	TLSClientConfig: &tls.Config{
+	// 		RootCAs:            nil,
+	// 		InsecureSkipVerify: true,
+	// 	},
+	// 	QuicConfig: quicConf,
+	// }
+	// defer roundTripper.Close()
+	// hclient := &http.Client{
+	// 	Transport: roundTripper,
+	// }
+
+	// roomPost(hclient)
+	// Create a new WebSocket client.
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	fmt.Println("connecting to ws://localhost:8080/room")
+
+	client, _, err := websocket.DefaultDialer.Dial("ws://localhost:8080/room", nil)
+	if err != nil {
+		fmt.Println("dial:", err)
 	}
 
-	roomPost(hclient)
+	go func() {
+		<-c
+		// Run Cleanup
+		err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		if err != nil {
+			fmt.Println("write close:", err)
+		}
+		client.Close()
+	}()
+
+	// Create a message.
+	message := map[string]string{
+		"command": "createRoom",
+		"userId":  utils.GenerateRandomID(5),
+	}
+
+	// Marshal the message to JSON.
+	var jsonMessage []byte
+	jsonMessage, err = json.Marshal(message)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = client.WriteMessage(websocket.TextMessage, jsonMessage)
+	if err != nil {
+		fmt.Println("write:", err)
+	}
+
+	for {
+		var msg []byte
+		_, msg, err = client.ReadMessage()
+		if err != nil {
+			fmt.Println("read:", err)
+			return
+		}
+		fmt.Println("recv: %s", string(msg))
+	}
 }

@@ -43,6 +43,22 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 	w.Write(b)
 }
 
+func CreateRoom(message map[string]string, rooms *[]db.Room) []byte {
+	// Create a new struct to hold the request body.
+	room := db.Room{Id: utils.GenerateRandomID(5)}
+	user := db.User{Id: message["userId"]}
+
+	room.Users = append(room.Users, user)
+	*rooms = append(*rooms, room)
+
+	b, err := json.Marshal(room)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return b
+}
+
 func RoomPatch(w http.ResponseWriter, id string) {
 	// Dummy data
 	room := &db.Room{Id: id}

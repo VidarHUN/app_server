@@ -3,6 +3,7 @@ module github.com/VidarHUN/app_server
 go 1.20
 
 require (
+	github.com/gorilla/websocket v1.5.0
 	github.com/quic-go/quic-go v0.37.0
 	github.com/redis/go-redis/v9 v9.0.5
 	github.com/spf13/viper v1.16.0
