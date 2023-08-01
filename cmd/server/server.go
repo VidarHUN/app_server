@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/VidarHUN/app_server/internal/db"
-	"github.com/VidarHUN/app_server/internal/handlers"
 )
 
 var upgrader = websocket.Upgrader{} // use default options
@@ -38,26 +36,29 @@ func setupHandler() http.Handler {
 				fmt.Println(err)
 				return
 			}
+			fmt.Println(string(msg))
+			fmt.Println(msgType)
+			conn.WriteMessage(msgType, msg)
 
-			// Unmarshal the message into a map.
-			var message map[string]string
-			err = json.Unmarshal(msg, &message)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
+			// // Unmarshal the message into a map.
+			// var message map[string]string
+			// err = json.Unmarshal(msg, &message)
+			// if err != nil {
+			// 	fmt.Println(err)
+			// 	return
+			// }
 
-			// Access the fields of the message by their names.
-			command := message["command"]
+			// // Access the fields of the message by their names.
+			// command := message["command"]
 
-			switch command {
-			case "createRoom":
-				rsp := handlers.CreateRoom(message, &rooms)
-				conn.WriteMessage(msgType, rsp)
-			default:
-				fmt.Println("Unknown command:", command)
-				conn.WriteMessage(msgType, []byte("Unkown command: "+command))
-			}
+			// switch command {
+			// case "createRoom":
+			// 	rsp := handlers.CreateRoom(message, &rooms)
+			// 	conn.WriteMessage(msgType, rsp)
+			// default:
+			// 	fmt.Println("Unknown command:", command)
+			// 	conn.WriteMessage(msgType, []byte("Unkown command: "+command))
+			// }
 		}
 
 		// switch r.Method {

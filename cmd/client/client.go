@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
-	"syscall"
+	"time"
 
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
@@ -16,9 +19,29 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// var upgrader = websocket.Upgrader{} // use default options
+var SERVER = "localhost:8080"
+var PATH = "/room"
+var in = bufio.NewReader(os.Stdin)
 
 var rooms []db.Room
+
+func getInput(input chan string) {
+	result, err := in.ReadString('\n')
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	input <- result
+}
+
+func readMsg(c *websocket.Conn) {
+	_, message, err := c.ReadMessage()
+	if err != nil {
+		log.Println("ReadMessage() error:", err)
+		return
+	}
+	log.Printf("Received: %s", message)
+}
 
 func roomPost(hclient *http.Client) {
 	user := db.User{Id: utils.GenerateRandomID(5)}
@@ -53,69 +76,48 @@ func roomPost(hclient *http.Client) {
 }
 
 func main() {
-	// quicConf := &quic.Config{
-	// 	KeepAlivePeriod: 60,
-	// }
-	// roundTripper := &http3.RoundTripper{
-	// 	TLSClientConfig: &tls.Config{
-	// 		RootCAs:            nil,
-	// 		InsecureSkipVerify: true,
-	// 	},
-	// 	QuicConfig: quicConf,
-	// }
-	// defer roundTripper.Close()
-	// hclient := &http.Client{
-	// 	Transport: roundTripper,
-	// }
+	fmt.Println("Connecting to:", SERVER, "at", PATH)
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
 
-	// roomPost(hclient)
-	// Create a new WebSocket client.
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	fmt.Println("connecting to ws://localhost:8080/room")
-
-	client, _, err := websocket.DefaultDialer.Dial("ws://localhost:8080/room", nil)
+	input := make(chan string, 1)
+	URL := url.URL{Scheme: "ws", Host: SERVER, Path: PATH}
+	c, _, err := websocket.DefaultDialer.Dial(URL.String(), nil)
 	if err != nil {
-		fmt.Println("dial:", err)
-	}
-
-	go func() {
-		<-c
-		// Run Cleanup
-		err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-		if err != nil {
-			fmt.Println("write close:", err)
-		}
-		client.Close()
-	}()
-
-	// Create a message.
-	message := map[string]string{
-		"command": "createRoom",
-		"userId":  utils.GenerateRandomID(5),
-	}
-
-	// Marshal the message to JSON.
-	var jsonMessage []byte
-	jsonMessage, err = json.Marshal(message)
-	if err != nil {
-		fmt.Println(err)
+		log.Println("Error:", err)
 		return
 	}
+	defer c.Close()
+	done := make(chan struct{})
+	go readMsg(c)
 
-	err = client.WriteMessage(websocket.TextMessage, jsonMessage)
-	if err != nil {
-		fmt.Println("write:", err)
-	}
+	go getInput(input)
 
 	for {
-		var msg []byte
-		_, msg, err = client.ReadMessage()
-		if err != nil {
-			fmt.Println("read:", err)
+		select {
+		case <-done:
+			return
+		case t := <-input:
+			err := c.WriteMessage(websocket.TextMessage, []byte(t))
+			if err != nil {
+				log.Println("Write error:", err)
+				return
+			}
+			go readMsg(c)
+			go getInput(input)
+		case <-interrupt:
+			log.Println("Caught interrupt signal - quitting!")
+			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+
+			if err != nil {
+				log.Println("Write close error:", err)
+				return
+			}
+			select {
+			case <-done:
+			case <-time.After(2 * time.Second):
+			}
 			return
 		}
-		fmt.Println("recv: %s", string(msg))
 	}
 }
