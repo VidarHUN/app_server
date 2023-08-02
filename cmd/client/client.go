@@ -11,8 +11,10 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
+	"github.com/VidarHUN/app_server/internal/commands"
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
 
@@ -26,6 +28,11 @@ var PATH = "/room"
 var in = bufio.NewReader(os.Stdin)
 
 var rooms []db.Room
+
+var ERRORS = []string{
+	"Too much or less arguments",
+	"Command not found",
+}
 
 func readMsg(c *websocket.Conn) {
 	_, message, err := c.ReadMessage()
@@ -75,13 +82,19 @@ func main() {
 		Short: "An interactive shell",
 		Run: func(cmd *cobra.Command, args []string) {
 			for {
-				line, err := in.ReadString('\n')
+				read_line, err := in.ReadString('\n')
 				if err != nil {
 					fmt.Println(err)
 					break
 				}
+				line := strings.TrimSuffix(read_line, "\n")
+				msg := commands.Handle(line)
 
-				input <- line
+				if utils.Contains(ERRORS, msg) {
+					log.Println(msg)
+				} else {
+					input <- msg
+				}
 			}
 		},
 	}
