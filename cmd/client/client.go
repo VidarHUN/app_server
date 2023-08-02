@@ -2,12 +2,8 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -43,38 +39,6 @@ func readMsg(c *websocket.Conn) {
 	log.Printf("Received: %s", message)
 }
 
-func roomPost(hclient *http.Client) {
-	user := db.User{Id: utils.GenerateRandomID(5)}
-
-	b, err := json.Marshal(user)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	rsp, err := hclient.Post("https://localhost:8443/room", "application/json", bytes.NewReader(b))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	body := &bytes.Buffer{}
-	_, err = io.Copy(body, rsp.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var room = db.Room{}
-	// Unmarshal the response body into the struct.
-	err = json.NewDecoder(body).Decode(&room)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println("Response Body:")
-	fmt.Println(room)
-
-	rooms = append(rooms, room)
-}
-
 func main() {
 	input := make(chan string, 1)
 	rootCmd := &cobra.Command{
@@ -88,7 +52,7 @@ func main() {
 					break
 				}
 				line := strings.TrimSuffix(read_line, "\n")
-				msg := commands.Handle(line)
+				msg := commands.Process(line)
 
 				if utils.Contains(ERRORS, msg) {
 					log.Println(msg)

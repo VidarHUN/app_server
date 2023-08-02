@@ -37,3 +37,11 @@ func Contains(s []string, e string) bool {
 	}
 	return false
 }
+
+func ToJson(msg interface{}) string {
+	b, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return string(b)
+}
