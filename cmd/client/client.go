@@ -17,6 +17,8 @@ import (
 	"github.com/VidarHUN/app_server/internal/utils"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/spf13/cobra"
 )
 
 var SERVER = "localhost:8080"
@@ -24,15 +26,6 @@ var PATH = "/room"
 var in = bufio.NewReader(os.Stdin)
 
 var rooms []db.Room
-
-func getInput(input chan string) {
-	result, err := in.ReadString('\n')
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	input <- result
-}
 
 func readMsg(c *websocket.Conn) {
 	_, message, err := c.ReadMessage()
@@ -76,11 +69,34 @@ func roomPost(hclient *http.Client) {
 }
 
 func main() {
+	input := make(chan string, 1)
+	rootCmd := &cobra.Command{
+		Use:   "shell",
+		Short: "An interactive shell",
+		Run: func(cmd *cobra.Command, args []string) {
+			for {
+				line, err := in.ReadString('\n')
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+
+				input <- line
+			}
+		},
+	}
+	go func() {
+		err := rootCmd.Execute()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	}()
+
 	fmt.Println("Connecting to:", SERVER, "at", PATH)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	input := make(chan string, 1)
 	URL := url.URL{Scheme: "ws", Host: SERVER, Path: PATH}
 	c, _, err := websocket.DefaultDialer.Dial(URL.String(), nil)
 	if err != nil {
@@ -89,9 +105,6 @@ func main() {
 	}
 	defer c.Close()
 	done := make(chan struct{})
-	go readMsg(c)
-
-	go getInput(input)
 
 	for {
 		select {
@@ -104,7 +117,6 @@ func main() {
 				return
 			}
 			go readMsg(c)
-			go getInput(input)
 		case <-interrupt:
 			log.Println("Caught interrupt signal - quitting!")
 			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
