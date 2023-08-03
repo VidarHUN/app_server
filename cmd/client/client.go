@@ -52,7 +52,7 @@ func main() {
 					break
 				}
 				line := strings.TrimSuffix(read_line, "\n")
-				msg := commands.Process(line)
+				msg := commands.Generate(line)
 
 				if utils.Contains(ERRORS, msg) {
 					log.Println(msg)

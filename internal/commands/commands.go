@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/VidarHUN/app_server/internal/db"
+	"github.com/VidarHUN/app_server/internal/handlers"
 	"github.com/VidarHUN/app_server/internal/utils"
 )
 
@@ -21,7 +24,7 @@ type id struct {
 	Id string `json:"id"`
 }
 
-func Process(command string) string {
+func Generate(command string) string {
 	parsed_command := strings.Split(command, " ")
 	switch parsed_command[0] {
 	case "createRoom":
@@ -66,4 +69,27 @@ func deleteRoom(roomId string) string {
 		Data:    id{Id: roomId},
 	}
 	return utils.ToJson(msg)
+}
+
+func Process(msg []byte, rooms *[]db.Room) string {
+	// Unmarshal the message into a map.
+	var message map[string]interface{}
+	err := json.Unmarshal(msg, &message)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Access the fields of the message by their names.
+	command := message["command"]
+
+	switch command {
+	case "createRoom":
+		return handlers.CreateRoom(message, rooms)
+	case "joinRoom":
+		return handlers.JoinRoom(message, rooms)
+	case "deleteRoom":
+		return handlers.DeleteRoom(message, rooms)
+	default:
+		return "Unkown command: " + command.(string)
+	}
 }

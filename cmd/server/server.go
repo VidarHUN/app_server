@@ -10,11 +10,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/VidarHUN/app_server/internal/commands"
 	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/VidarHUN/app_server/internal/db"
 )
-
-var upgrader = websocket.Upgrader{} // use default options
 
 var rooms []db.Room
 
@@ -37,62 +36,11 @@ func setupHandler() http.Handler {
 				return
 			}
 			fmt.Println(string(msg))
-			fmt.Println(msgType)
-			conn.WriteMessage(msgType, msg)
 
-			// // Unmarshal the message into a map.
-			// var message map[string]string
-			// err = json.Unmarshal(msg, &message)
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	return
-			// }
-
-			// // Access the fields of the message by their names.
-			// command := message["command"]
-
-			// switch command {
-			// case "createRoom":
-			// 	rsp := handlers.CreateRoom(message, &rooms)
-			// 	conn.WriteMessage(msgType, rsp)
-			// default:
-			// 	fmt.Println("Unknown command:", command)
-			// 	conn.WriteMessage(msgType, []byte("Unkown command: "+command))
-			// }
+			retMsg := commands.Process(msg, &rooms)
+			conn.WriteMessage(msgType, []byte(retMsg))
 		}
-
-		// switch r.Method {
-		// case http.MethodGet:
-		// 	handlers.RoomGet(w)
-		// case http.MethodPost:
-		// 	handlers.RoomPost(w, r, &rooms)
-		// case http.MethodPatch:
-		// 	id := r.URL.Query().Get("id")
-		// 	handlers.RoomPatch(w, id)
-		// case http.MethodDelete:
-		// 	id := r.URL.Query().Get("id")
-		// 	handlers.RoomDelete(w, id)
-		// default:
-		// 	http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		// }
 	})
-
-	// mux.HandleFunc("/room/users", func(w http.ResponseWriter, r *http.Request) {
-	// 	switch r.Method {
-	// 	case http.MethodGet:
-	// 		handlers.UserGet(w)
-	// 	case http.MethodPost:
-	// 		handlers.UserPost(r)
-	// 	case http.MethodPatch:
-	// 		id := r.URL.Query().Get("id")
-	// 		handlers.UserPatch(w, id)
-	// 	case http.MethodDelete:
-	// 		id := r.URL.Query().Get("id")
-	// 		handlers.UserDelete(w, id)
-	// 	default:
-	// 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-	// 	}
-	// })
 
 	return mux
 }
