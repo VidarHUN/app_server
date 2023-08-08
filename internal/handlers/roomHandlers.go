@@ -43,10 +43,14 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 	w.Write(b)
 }
 
-func CreateRoom(message map[string]interface{}, rooms *[]db.Room) string {
+func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn db.Connection) string {
+	fmt.Println(conn)
 	// Create a new struct to hold the request body.
 	room := db.Room{Id: utils.GenerateRandomID(5)}
-	user := db.User{Id: message["data"].(map[string]interface{})["id"].(string)}
+	user := db.User{
+		Id:         message["data"].(map[string]interface{})["id"].(string),
+		Connection: conn,
+	}
 
 	room.Users = append(room.Users, user)
 	*rooms = append(*rooms, room)
@@ -54,12 +58,14 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room) string {
 	return utils.ToJson(room)
 }
 
-func JoinRoom(message map[string]interface{}, rooms *[]db.Room) string {
+func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn db.Connection) string {
 	var room db.Room
 	for _, r := range *rooms {
 		if r.Id == message["data"].(map[string]interface{})["id"] {
+			notifyUser(r)
 			user := db.User{
-				Id: message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
+				Id:         message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
+				Connection: conn,
 			}
 			r.Users = append(r.Users, user)
 			room = r
@@ -76,6 +82,17 @@ func DeleteRoom(message map[string]interface{}, rooms *[]db.Room) string {
 		}
 	}
 	return utils.ToJson("Room deleted")
+}
+
+// TODO: Fix me!
+func notifyUser(room db.Room) {
+	roomJson := utils.ToJson(room)
+	for _, u := range room.Users {
+		err := u.Connection.Conn.WriteMessage(u.Connection.MsgType, []byte(roomJson))
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 func RoomPatch(w http.ResponseWriter, id string) {

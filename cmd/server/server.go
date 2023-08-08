@@ -21,8 +21,14 @@ func setupHandler() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/room", func(w http.ResponseWriter, r *http.Request) {
+		// Create a Gorilla websocket handler.
+		upgrader := websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		}
 		// Upgrade the HTTP connection to a WebSocket connection.
-		conn, err := websocket.Upgrade(w, r, nil, 1024, 1024)
+		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -36,7 +42,8 @@ func setupHandler() http.Handler {
 				return
 			}
 			fmt.Println(string(msg))
-			retMsg := commands.Process(msg, &rooms)
+			connection := db.Connection{MsgType: msgType, Conn: conn}
+			retMsg := commands.Process(msg, &rooms, connection)
 			conn.WriteMessage(msgType, []byte(retMsg))
 		}
 	})

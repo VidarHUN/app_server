@@ -71,7 +71,7 @@ func deleteRoom(roomId string) string {
 	return utils.ToJson(msg)
 }
 
-func Process(msg []byte, rooms *[]db.Room) string {
+func Process(msg []byte, rooms *[]db.Room, conn db.Connection) string {
 	// Unmarshal the message into a map.
 	var message map[string]interface{}
 	err := json.Unmarshal(msg, &message)
@@ -84,9 +84,9 @@ func Process(msg []byte, rooms *[]db.Room) string {
 
 	switch command {
 	case "createRoom":
-		return handlers.CreateRoom(message, rooms)
+		return handlers.CreateRoom(message, rooms, conn)
 	case "joinRoom":
-		return handlers.JoinRoom(message, rooms)
+		return handlers.JoinRoom(message, rooms, conn)
 	case "deleteRoom":
 		return handlers.DeleteRoom(message, rooms)
 	default:

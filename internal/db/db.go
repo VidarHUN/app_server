@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -14,7 +15,13 @@ type Room struct {
 }
 
 type User struct {
-	Id string `json:"id"`
+	Id         string     `json:"id"`
+	Connection Connection `json:"connection"`
+}
+
+type Connection struct {
+	MsgType int             `json:"msgType"`
+	Conn    *websocket.Conn `json:"conn"`
 }
 
 // NewRedisClient creates and returns a new Redis client instance.
