@@ -46,7 +46,7 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 func CreateRoom(message map[string]interface{}, rooms *[]db.Room) string {
 	// Create a new struct to hold the request body.
 	room := db.Room{Id: utils.GenerateRandomID(5)}
-	user := db.User{Id: message["userId"].(string)}
+	user := db.User{Id: message["data"].(map[string]interface{})["id"].(string)}
 
 	room.Users = append(room.Users, user)
 	*rooms = append(*rooms, room)

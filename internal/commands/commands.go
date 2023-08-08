@@ -65,7 +65,7 @@ func joinRoom(roomId string) string {
 
 func deleteRoom(roomId string) string {
 	msg := message[id]{
-		Command: "joinRoom",
+		Command: "deleteRoom",
 		Data:    id{Id: roomId},
 	}
 	return utils.ToJson(msg)

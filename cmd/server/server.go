@@ -36,7 +36,6 @@ func setupHandler() http.Handler {
 				return
 			}
 			fmt.Println(string(msg))
-
 			retMsg := commands.Process(msg, &rooms)
 			conn.WriteMessage(msgType, []byte(retMsg))
 		}
