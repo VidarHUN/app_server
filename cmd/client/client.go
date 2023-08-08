@@ -37,6 +37,7 @@ func readMsg(c *websocket.Conn) {
 		return
 	}
 	log.Printf("Received: %s", message)
+	go readMsg(c)
 }
 
 func main() {
@@ -76,6 +77,7 @@ func main() {
 
 	URL := url.URL{Scheme: "ws", Host: SERVER, Path: PATH}
 	c, _, err := websocket.DefaultDialer.Dial(URL.String(), nil)
+	fmt.Println(c.LocalAddr())
 	if err != nil {
 		log.Println("Error:", err)
 		return

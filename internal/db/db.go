@@ -15,13 +15,8 @@ type Room struct {
 }
 
 type User struct {
-	Id         string     `json:"id"`
-	Connection Connection `json:"connection"`
-}
-
-type Connection struct {
-	MsgType int             `json:"msgType"`
-	Conn    *websocket.Conn `json:"conn"`
+	Id   string          `json:"id"`
+	Conn *websocket.Conn `json:"connection"`
 }
 
 // NewRedisClient creates and returns a new Redis client instance.

@@ -8,6 +8,7 @@ import (
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/handlers"
 	"github.com/VidarHUN/app_server/internal/utils"
+	"github.com/gorilla/websocket"
 )
 
 type message[T any] struct {
@@ -71,7 +72,7 @@ func deleteRoom(roomId string) string {
 	return utils.ToJson(msg)
 }
 
-func Process(msg []byte, rooms *[]db.Room, conn db.Connection) string {
+func Process(msg []byte, rooms *[]db.Room, conn *websocket.Conn) string {
 	// Unmarshal the message into a map.
 	var message map[string]interface{}
 	err := json.Unmarshal(msg, &message)

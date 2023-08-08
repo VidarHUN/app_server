@@ -7,6 +7,7 @@ import (
 
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
+	"github.com/gorilla/websocket"
 )
 
 func RoomGet(w http.ResponseWriter) {
@@ -43,13 +44,12 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 	w.Write(b)
 }
 
-func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn db.Connection) string {
-	fmt.Println(conn)
+func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn) string {
 	// Create a new struct to hold the request body.
 	room := db.Room{Id: utils.GenerateRandomID(5)}
 	user := db.User{
-		Id:         message["data"].(map[string]interface{})["id"].(string),
-		Connection: conn,
+		Id:   message["data"].(map[string]interface{})["id"].(string),
+		Conn: conn,
 	}
 
 	room.Users = append(room.Users, user)
@@ -58,14 +58,14 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn db.Connec
 	return utils.ToJson(room)
 }
 
-func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn db.Connection) string {
+func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn) string {
 	var room db.Room
 	for _, r := range *rooms {
 		if r.Id == message["data"].(map[string]interface{})["id"] {
-			notifyUser(r)
+			go notifyUser(r)
 			user := db.User{
-				Id:         message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
-				Connection: conn,
+				Id:   message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
+				Conn: conn,
 			}
 			r.Users = append(r.Users, user)
 			room = r
@@ -84,11 +84,11 @@ func DeleteRoom(message map[string]interface{}, rooms *[]db.Room) string {
 	return utils.ToJson("Room deleted")
 }
 
-// TODO: Fix me!
 func notifyUser(room db.Room) {
 	roomJson := utils.ToJson(room)
+	fmt.Println(roomJson)
 	for _, u := range room.Users {
-		err := u.Connection.Conn.WriteMessage(u.Connection.MsgType, []byte(roomJson))
+		err := u.Conn.WriteMessage(websocket.TextMessage, []byte(roomJson))
 		if err != nil {
 			fmt.Println(err)
 		}
