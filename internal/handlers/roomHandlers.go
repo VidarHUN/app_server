@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
 	"github.com/gorilla/websocket"
@@ -44,7 +45,7 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 	w.Write(b)
 }
 
-func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn) string {
+func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn, quicrq config.QuicrqServer) string {
 	// Create a new struct to hold the request body.
 	room := db.Room{Id: utils.GenerateRandomID(5)}
 	user := db.User{
@@ -54,6 +55,8 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocke
 
 	room.Users = append(room.Users, user)
 	*rooms = append(*rooms, room)
+
+	room.Server = quicrq
 
 	return utils.ToJson(room)
 }

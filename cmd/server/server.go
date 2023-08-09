@@ -15,6 +15,7 @@ import (
 	"github.com/VidarHUN/app_server/internal/db"
 )
 
+var configuration config.Configurations
 var rooms []db.Room
 
 func setupHandler() http.Handler {
@@ -42,7 +43,7 @@ func setupHandler() http.Handler {
 				return
 			}
 			fmt.Println(string(msg))
-			retMsg := commands.Process(msg, &rooms, conn)
+			retMsg := commands.Process(msg, &rooms, conn, configuration.Quicrq)
 			conn.WriteMessage(msgType, []byte(retMsg))
 		}
 	})
@@ -57,7 +58,7 @@ func main() {
 
 	flag.StringVar(&path, "path", ".", "Directory of config")
 	flag.Parse()
-	configuration := config.ReadConfig(path)
+	configuration = config.ReadConfig(path)
 	redisAddress := fmt.Sprintf("%s:%d", configuration.Database.Address, configuration.Database.Port)
 	client, err = db.NewRedisClient(redisAddress, "", 0)
 	if err != nil {

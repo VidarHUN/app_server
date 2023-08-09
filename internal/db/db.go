@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 )
 
 type Room struct {
-	Id    string `json:"id"`
-	Users []User `json:"users"`
+	Id     string              `json:"id"`
+	Users  []User              `json:"users"`
+	Server config.QuicrqServer `json:"server"`
 }
 
 type User struct {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/VidarHUN/app_server/internal/config"
 	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/handlers"
 	"github.com/VidarHUN/app_server/internal/utils"
@@ -72,7 +73,7 @@ func deleteRoom(roomId string) string {
 	return utils.ToJson(msg)
 }
 
-func Process(msg []byte, rooms *[]db.Room, conn *websocket.Conn) string {
+func Process(msg []byte, rooms *[]db.Room, conn *websocket.Conn, quicrq config.QuicrqServer) string {
 	// Unmarshal the message into a map.
 	var message map[string]interface{}
 	err := json.Unmarshal(msg, &message)
@@ -85,7 +86,7 @@ func Process(msg []byte, rooms *[]db.Room, conn *websocket.Conn) string {
 
 	switch command {
 	case "createRoom":
-		return handlers.CreateRoom(message, rooms, conn)
+		return handlers.CreateRoom(message, rooms, conn, quicrq)
 	case "joinRoom":
 		return handlers.JoinRoom(message, rooms, conn)
 	case "deleteRoom":
