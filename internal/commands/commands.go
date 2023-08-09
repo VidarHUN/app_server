@@ -2,7 +2,10 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
+	"os/exec"
 	"strings"
 
 	"github.com/VidarHUN/app_server/internal/config"
@@ -93,5 +96,53 @@ func Process(msg []byte, rooms *[]db.Room, conn *websocket.Conn, quicrq config.Q
 		return handlers.DeleteRoom(message, rooms)
 	default:
 		return "Unkown command: " + command.(string)
+	}
+}
+
+func QuicrqProcess(msg []byte, src string) {
+	// Unmarshal the message into a map.
+	var message map[string]interface{}
+	err := json.Unmarshal(msg, &message)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Access the fields of the message by their names.
+	command := message["command"]
+	var q_commands []string
+
+	switch command {
+	case "createRoom":
+		q_commands = append(q_commands, quicrqPost(message, src))
+	case "joinRoom":
+		q_commands = append(q_commands, quicrqPost(message, src))
+		q_commands = append(q_commands, quicrqGet(message, src))
+	case "newUser":
+		q_commands = append(q_commands, quicrqGet(message, src))
+	}
+
+	for _, cmd := range q_commands {
+		go startCmd(cmd)
+	}
+}
+
+func quicrqPost(message map[string]interface{}, src string) string {
+	url := fmt.Sprintf("%s_%s", message["id"], message["data"].(map[string]interface{})["id"])
+	return fmt.Sprintf("post:%s:%s", url, src)
+}
+
+func quicrqGet(message map[string]interface{}, src string) string {
+	url := fmt.Sprintf("%s_%s", message["id"], message["data"].(map[string]interface{})["id"])
+	newSrc := fmt.Sprintf("%s_%s", message["data"].(map[string]interface{})["id"], src)
+	return fmt.Sprintf("get:%s:%s", url, newSrc)
+}
+
+func startCmd(command string) {
+	cmd := exec.Command(command)
+	if errors.Is(cmd.Err, exec.ErrDot) {
+		cmd.Err = nil
+	}
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
 	}
 }

@@ -20,6 +20,7 @@ import (
 
 var SERVER = "localhost:8080"
 var PATH = "/room"
+var SRC = "samples/video1_source.bin"
 var in = bufio.NewReader(os.Stdin)
 
 var ERRORS = []string{
@@ -34,6 +35,7 @@ func readMsg(c *websocket.Conn) {
 		return
 	}
 	log.Printf("Received: %s", message)
+	commands.QuicrqProcess(message, SRC)
 	go readMsg(c)
 }
 
