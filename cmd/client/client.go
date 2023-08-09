@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/VidarHUN/app_server/internal/commands"
-	"github.com/VidarHUN/app_server/internal/db"
 	"github.com/VidarHUN/app_server/internal/utils"
 
 	"github.com/gorilla/websocket"
@@ -22,8 +21,6 @@ import (
 var SERVER = "localhost:8080"
 var PATH = "/room"
 var in = bufio.NewReader(os.Stdin)
-
-var rooms []db.Room
 
 var ERRORS = []string{
 	"Too much or less arguments",

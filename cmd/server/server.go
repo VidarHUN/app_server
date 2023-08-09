@@ -58,8 +58,7 @@ func main() {
 	flag.StringVar(&path, "path", ".", "Directory of config")
 	flag.Parse()
 	configuration := config.ReadConfig(path)
-
-	redisAddress := configuration.Database.Address + ":" + string(configuration.Database.Port)
+	redisAddress := fmt.Sprintf("%s:%d", configuration.Database.Address, configuration.Database.Port)
 	client, err = db.NewRedisClient(redisAddress, "", 0)
 	if err != nil {
 		fmt.Println(err)
