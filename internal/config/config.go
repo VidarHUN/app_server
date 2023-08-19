@@ -12,8 +12,8 @@ type Configurations struct {
 }
 
 type QuicrqServer struct {
-	Address string
-	Port    int
+	Address string `json:"address"`
+	Port    int    `json:"port"`
 }
 
 type DatabaseServer struct {

@@ -58,7 +58,12 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocke
 
 	room.Server = quicrq
 
-	return utils.ToJson(room)
+	ret := utils.Message[db.Room]{
+		Command: "createRoom",
+		Data:    room,
+	}
+
+	return utils.ToJson(ret)
 }
 
 func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn) string {

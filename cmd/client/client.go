@@ -21,6 +21,8 @@ import (
 var SERVER = "localhost:8080"
 var PATH = "/room"
 var SRC = "samples/video1_source.bin"
+var QUICRQ = "./quicrq_app"
+var USERID = utils.GenerateRandomID(5)
 var in = bufio.NewReader(os.Stdin)
 
 var ERRORS = []string{
@@ -35,7 +37,7 @@ func readMsg(c *websocket.Conn) {
 		return
 	}
 	log.Printf("Received: %s", message)
-	commands.QuicrqProcess(message, SRC)
+	commands.QuicrqProcess(message, SRC, QUICRQ, USERID)
 	go readMsg(c)
 }
 
@@ -52,7 +54,7 @@ func main() {
 					break
 				}
 				line := strings.TrimSuffix(read_line, "\n")
-				msg := commands.Generate(line)
+				msg := commands.Generate(line, USERID)
 
 				if utils.Contains(ERRORS, msg) {
 					log.Println(msg)

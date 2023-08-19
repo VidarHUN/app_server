@@ -6,6 +6,20 @@ import (
 	"fmt"
 )
 
+type Message[T any] struct {
+	Command string `json:"command"`
+	Data    T      `json:"data"`
+}
+
+type MixedData[T any] struct {
+	Id   string `json:"id"`
+	Data T      `json:"data"`
+}
+
+type Id struct {
+	Id string `json:"id"`
+}
+
 func ErrorToBytes(err error) []byte {
 	if err == nil {
 		return []byte("")
