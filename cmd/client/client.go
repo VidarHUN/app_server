@@ -72,17 +72,21 @@ func main() {
 		}
 	}()
 
+	if len(os.Args) > 1 {
+		SERVER = os.Args[1]
+	}
+
 	fmt.Println("Connecting to:", SERVER, "at", PATH)
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
 	URL := url.URL{Scheme: "ws", Host: SERVER, Path: PATH}
 	c, _, err := websocket.DefaultDialer.Dial(URL.String(), nil)
-	fmt.Println(c.LocalAddr())
 	if err != nil {
 		log.Println("Error:", err)
 		return
 	}
+	fmt.Println(c.LocalAddr())
 	defer c.Close()
 	done := make(chan struct{})
 

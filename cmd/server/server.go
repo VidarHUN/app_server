@@ -8,7 +8,6 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/gorilla/websocket"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/VidarHUN/app_server/internal/commands"
 	"github.com/VidarHUN/app_server/internal/config"
@@ -52,23 +51,23 @@ func setupHandler() http.Handler {
 }
 
 func main() {
-	var err error
-	var client *redis.Client
+	// var err error
+	// var client *redis.Client
 	var path string
 
 	flag.StringVar(&path, "path", ".", "Directory of config")
 	flag.Parse()
 	configuration = config.ReadConfig(path)
-	redisAddress := fmt.Sprintf("%s:%d", configuration.Database.Address, configuration.Database.Port)
-	client, err = db.NewRedisClient(redisAddress, "", 0)
-	if err != nil {
-		fmt.Println(err)
-	}
-	client.Close()
+	// redisAddress := fmt.Sprintf("%s:%d", configuration.Database.Address, configuration.Database.Port)
+	// client, err = db.NewRedisClient(redisAddress, "", 0)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// client.Close()
 
 	handler := setupHandler()
 
-	fmt.Println(http.ListenAndServe("localhost:8080", handler))
+	fmt.Println(http.ListenAndServe("0.0.0.0:8080", handler))
 
 	// HTTP3
 	// handler := setupHandler()
