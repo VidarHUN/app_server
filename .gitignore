@@ -37,3 +37,6 @@ go.work
 *.der
 *.priv
 *.csr
+
+# Dummy files
+tests

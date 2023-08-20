@@ -102,9 +102,15 @@ func QuicrqProcess(msg []byte, src string, quicrq string, userId string) {
 		q_commands = append(q_commands, quicrqPost(message, src, userId))
 	case "joinRoom":
 		q_commands = append(q_commands, quicrqPost(message, src, userId))
-		q_commands = append(q_commands, quicrqGet(message, src, userId))
+		for _, u := range message["data"].(map[string]interface{})["users"].([]interface{}) {
+			newUserId := u.(map[string]interface{})["id"].(string)
+			if newUserId != userId {
+				q_commands = append(q_commands, quicrqGet(message, newUserId))
+			}
+		}
 	case "newUser":
-		q_commands = append(q_commands, quicrqGet(message, src, userId))
+		newUserId := message["data"].(map[string]interface{})["users"].([]interface{})[0].(map[string]interface{})["id"]
+		q_commands = append(q_commands, quicrqGet(message, newUserId.(string)))
 	}
 
 	quicrq_server := message["data"].(map[string]interface{})["server"].(map[string]interface{})["address"]
@@ -122,9 +128,9 @@ func quicrqPost(message map[string]interface{}, src string, userId string) strin
 	return fmt.Sprintf("post:%s:%s", url, src)
 }
 
-func quicrqGet(message map[string]interface{}, src string, userId string) string {
+func quicrqGet(message map[string]interface{}, userId string) string {
 	url := fmt.Sprintf("%s_%s", userId, message["data"].(map[string]interface{})["id"])
-	newSrc := fmt.Sprintf("%s_%s", message["data"].(map[string]interface{})["id"], src)
+	newSrc := fmt.Sprintf("tests/%s.bin", message["data"].(map[string]interface{})["id"])
 	return fmt.Sprintf("get:%s:%s", url, newSrc)
 }
 
@@ -132,6 +138,7 @@ func startCmd(command string) {
 	commandList := strings.Split(command, " ")
 	cmd := exec.Command(commandList[0])
 	cmd.Args = commandList
+	fmt.Println(cmd)
 	if errors.Is(cmd.Err, exec.ErrDot) {
 		cmd.Err = nil
 	}

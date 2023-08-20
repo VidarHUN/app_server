@@ -54,9 +54,8 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocke
 	}
 
 	room.Users = append(room.Users, user)
-	*rooms = append(*rooms, room)
-
 	room.Server = quicrq
+	*rooms = append(*rooms, room)
 
 	ret := utils.Message[db.Room]{
 		Command: "createRoom",
@@ -70,16 +69,22 @@ func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.
 	var room db.Room
 	for _, r := range *rooms {
 		if r.Id == message["data"].(map[string]interface{})["id"] {
-			go notifyUser(r)
 			user := db.User{
 				Id:   message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
 				Conn: conn,
 			}
+			go notifyUser(r, user)
 			r.Users = append(r.Users, user)
 			room = r
 		}
 	}
-	return utils.ToJson(room)
+
+	ret := utils.Message[db.Room]{
+		Command: "joinRoom",
+		Data:    room,
+	}
+
+	return utils.ToJson(ret)
 }
 
 func DeleteRoom(message map[string]interface{}, rooms *[]db.Room) string {
@@ -92,11 +97,16 @@ func DeleteRoom(message map[string]interface{}, rooms *[]db.Room) string {
 	return utils.ToJson("Room deleted")
 }
 
-func notifyUser(room db.Room) {
-	roomJson := utils.ToJson(room)
-	fmt.Println(roomJson)
-	for _, u := range room.Users {
-		err := u.Conn.WriteMessage(websocket.TextMessage, []byte(roomJson))
+func notifyUser(room db.Room, user db.User) {
+	users := room.Users
+	room.Users = []db.User{user}
+	ret := utils.Message[db.Room]{
+		Command: "newUser",
+		Data:    room,
+	}
+	retJson := utils.ToJson(ret)
+	for _, u := range users {
+		err := u.Conn.WriteMessage(websocket.TextMessage, []byte(retJson))
 		if err != nil {
 			fmt.Println(err)
 		}
