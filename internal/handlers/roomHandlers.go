@@ -47,9 +47,9 @@ func RoomPost(w http.ResponseWriter, r *http.Request, rooms *[]db.Room) {
 
 func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn, quicrq config.QuicrqServer) string {
 	// Create a new struct to hold the request body.
-	room := db.Room{Id: utils.GenerateRandomID(5)}
+	room := db.Room{Id: message["data"].(map[string]interface{})["id"].(string)}
 	user := db.User{
-		Id:   message["data"].(map[string]interface{})["id"].(string),
+		Id:   message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
 		Conn: conn,
 	}
 

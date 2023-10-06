@@ -17,29 +17,29 @@ import (
 
 func Generate(command string, userId string) string {
 	parsed_command := strings.Split(command, " ")
+	if len(parsed_command) != 2 {
+		return "Too much or less arguments"
+	}
 	switch parsed_command[0] {
 	// TODO: Force room name
 	case "createRoom":
-		return createRoom(userId)
+		return createRoom(parsed_command[1], userId)
 	case "joinRoom":
-		if len(parsed_command) != 2 {
-			return "Too much or less arguments"
-		}
 		return joinRoom(parsed_command[1], userId)
 	case "deleteRoom":
-		if len(parsed_command) != 2 {
-			return "Too much or less arguments"
-		}
 		return deleteRoom(parsed_command[1])
 	default:
 		return "Command not found"
 	}
 }
 
-func createRoom(userId string) string {
-	msg := utils.Message[db.User]{
+func createRoom(roomId string, userId string) string {
+	msg := utils.Message[utils.MixedData[db.User]]{
 		Command: "createRoom",
-		Data:    db.User{Id: userId},
+		Data: utils.MixedData[db.User]{
+			Id:   roomId,
+			Data: db.User{Id: userId},
+		},
 	}
 	return utils.ToJson(msg)
 }
