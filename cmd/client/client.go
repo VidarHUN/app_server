@@ -46,6 +46,7 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:   "shell",
 		Short: "An interactive shell",
+		// TODO: Make it scriptable from file
 		Run: func(cmd *cobra.Command, args []string) {
 			for {
 				read_line, err := in.ReadString('\n')

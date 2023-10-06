@@ -41,3 +41,6 @@ go.work
 
 # Dummy files
 tests
+
+# K8s cert secret
+deployment/quicrq/secret.yaml

@@ -18,6 +18,7 @@ import (
 func Generate(command string, userId string) string {
 	parsed_command := strings.Split(command, " ")
 	switch parsed_command[0] {
+	// TODO: Force room name
 	case "createRoom":
 		return createRoom(userId)
 	case "joinRoom":

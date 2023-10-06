@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: DEPLOYMENT_NAME
+spec:
+  selector:
+    matchLabels:
+      app: DEPLOYMENT_NAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: DEPLOYMENT_NAME
+    spec:
+      volumes:
+        - name: keys-volume
+          secret:
+            secretName: keys
+      containers:
+        - name: quicrq-app
+          image: vidarhun/quicrq_app
+          volumeMounts:
+            - name: keys-volume
+              mountPath: /certs
+          command: ["./quicrq_app","-p","PORT_NUMBER","-c","/certs/cert.pem","-k","/certs/key.pem","relay","quicrq-server-hl.default.svc.cluster.local","d","4433"]
+          ports:
+            - containerPort: PORT_NUMBER
+              protocol: UDP
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: SERVICE_NAME
+spec:
+  type: LoadBalancer
+  selector:
+    app: DEPLOYMENT_NAME
+  ports:
+    - protocol: UDP
+      port: PORT_NUMBER
+      targetPort: PORT_NUMBER
+

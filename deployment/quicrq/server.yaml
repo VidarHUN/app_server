@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: quicrq-server
+spec:
+  serviceName: quicrq-server-hl
+  selector:
+    matchLabels:
+      app: quicrq-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: quicrq-server
+    spec:
+      volumes:
+        - name: keys-volume
+          secret:
+            secretName: keys
+      containers:
+        - name: quicrq-app
+          image: vidarhun/quicrq_app
+          volumeMounts:
+            - name: keys-volume
+              mountPath: /certs
+          command: ["./quicrq_app","-c","/certs/cert.pem","-k","/certs/key.pem","-p","4433","server"]
+          ports:
+            - containerPort: 4433
+              protocol: UDP
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quicrq-server-hl
+spec:
+  clusterIP: None
+  selector:
+    app: quicrq-server
+  ports:
+    - protocol: UDP
+      port: 4433
+      targetPort: 4433
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quicrq-server-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app: quicrq-server
+  ports:
+    - protocol: UDP
+      port: 4433
+      targetPort: 4433
+
