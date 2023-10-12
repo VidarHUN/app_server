@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/VidarHUN/app_server/internal/config"
@@ -17,8 +18,9 @@ type Room struct {
 }
 
 type User struct {
-	Id   string          `json:"id"`
-	Conn *websocket.Conn `json:"connection"`
+	Id   string `json:"id"`
+	Conn *websocket.Conn
+	M    sync.Mutex
 }
 
 // NewRedisClient creates and returns a new Redis client instance.

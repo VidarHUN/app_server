@@ -67,8 +67,9 @@ func CreateRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocke
 
 func JoinRoom(message map[string]interface{}, rooms *[]db.Room, conn *websocket.Conn) string {
 	var room db.Room
+	id := message["data"].(map[string]interface{})["id"]
 	for _, r := range *rooms {
-		if r.Id == message["data"].(map[string]interface{})["id"] {
+		if r.Id == id {
 			user := db.User{
 				Id:   message["data"].(map[string]interface{})["data"].(map[string]interface{})["id"].(string),
 				Conn: conn,
@@ -106,6 +107,8 @@ func notifyUser(room db.Room, user db.User) {
 	}
 	retJson := utils.ToJson(ret)
 	for _, u := range users {
+		u.M.Lock()
+		defer u.M.Unlock()
 		err := u.Conn.WriteMessage(websocket.TextMessage, []byte(retJson))
 		if err != nil {
 			fmt.Println(err)

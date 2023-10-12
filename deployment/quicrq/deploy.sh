@@ -60,7 +60,7 @@ arch=""
 list_flag=0
 
 # Use getopts to parse command-line options and arguments
-while getopts "a:b:c:l" opt; do
+while getopts "a:l:" opt; do
   case "$opt" in
     a) arch="$OPTARG" ;;
     l) list_flag=1 ;;  # Set the flag to true when -l is provided

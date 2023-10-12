@@ -21,7 +21,6 @@ func Generate(command string, userId string) string {
 		return "Too much or less arguments"
 	}
 	switch parsed_command[0] {
-	// TODO: Force room name
 	case "createRoom":
 		return createRoom(parsed_command[1], userId)
 	case "joinRoom":
