@@ -14,21 +14,26 @@ list_archs() {
     echo "2. relay-server"
     echo "3. relay-server-relay"
     echo "4. relay-server-relay-relay"
+    echo "5. relay-server-realy (Multi-cluster)"
 }
 
 apply_modified_relay() {
     local service_name="$1"
     local deployment_name="$2"
     local port="$3"
+    local multi="${4:-cluster}"
 
     # Replace placeholders with actual values
     sed -e "s/SERVICE_NAME/$service_name/g" \
         -e "s/DEPLOYMENT_NAME/$deployment_name/g" \
         -e "s/PORT_NUMBER/$port/g" \
+        -e "s/cluster/$multi/g" \
         relay.yaml > modified-relay.yaml
 
     # Apply the modified YAML using kubectl (assuming you have kubectl configured)
     kubectl apply -f modified-relay.yaml
+    wait 5
+    kubectl wait --for=condition=ready pod -l app="$deployment_name" --timeout=2m
 
     # Clean up the temporary modified YAML file
     rm modified-relay.yaml
@@ -109,6 +114,15 @@ elif [ "$arch" = 4 ]; then
     echo "Relay IP $relay1_ip"
     relay2_ip=$(wait_for_lb "quicrq-relay-lb-2")
     echo "Relay IP $relay2_ip"
+elif [ "$arch" = 5 ]; then
+    echo "5. relay-server-realy (Multi-cluster)"
+    kubectl config use-context quicrq-eu
+    server_ip=$(basic)
+    kubectl apply -f server-export.yaml
+    apply_modified_relay "quicrq-relay-lb-eu" "quicrq-relay-eu" 30900
+    kubectl config use-context quicrq-us
+    kubectl apply -f secret.yaml
+    apply_modified_relay "quicrq-relay-lb-us" "quicrq-relay-us" 30900 "clusterset"
 else
     echo "Unknown architecture"
     list_archs

@@ -10,4 +10,5 @@ RUN apk add ca-certificates cmake git make gcc pkgconfig openssl-dev alpine-sdk 
 
 FROM alpine
 WORKDIR /app
+RUN mkdir qlog
 COPY --from=builder /build/quicrq/quicrq_app .

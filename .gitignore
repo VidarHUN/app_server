@@ -44,3 +44,5 @@ tests
 
 # K8s cert secret
 deployment/quicrq/secret.yaml
+
+scripts/*.csv
