@@ -1,0 +1,2 @@
+location,avg_delay,min_delay,max_delay,median,95th,99th,jitter
+baseline,14.703,0.114,589.822,12.881,27.761,29.644,0.0814733898958598
