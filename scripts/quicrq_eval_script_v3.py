@@ -3,6 +3,7 @@ import argparse
 import math
 import pandas as pd
 import tqdm
+import statistics
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -284,21 +285,21 @@ for idx, _ in enumerate(list1_col_time):
 #     print(len(delays))
 #     print("Something is bad!")
 
-pbar_diffs = tqdm.tqdm(total=len(delays), desc="Calculate jitter")
-differences = []
-for i in range(len(delays) - 1):
-    pbar_diffs.update(1)
-    difference = abs(delays[i + 1] - delays[i])
-    differences.append(difference)
-
-# Calculate the average jitter.
-jitter = sum(differences) / len(differences)
-
 delays.sort()
 avg_delay = round((sum(delays) / len(delays)), 3)
 delay_50th = delays[math.floor(len(delays) * 0.5)]
 delay_95th = delays[math.floor(len(delays) * 0.95)]
 delay_99th = delays[math.floor(len(delays) * 0.99)]
+
+pbar_diffs = tqdm.tqdm(total=len(delays), desc="Calculate jitter")
+differences = []
+for i in range(len(delays)):
+    pbar_diffs.update(1)
+    difference = abs(delays[i] - avg_delay)
+    differences.append(difference)
+
+# Calculate the average jitter.
+jitter = sum(differences) / len(differences)
 
 results = []
 results.append(args.location)

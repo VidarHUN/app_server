@@ -14,7 +14,7 @@ list_archs() {
     echo "2. relay-server"
     echo "3. relay-server-relay"
     echo "4. relay-server-relay-relay"
-    echo "5. relay-server-realy (Multi-cluster)"
+    echo "5. relay-server-relay (Multi-cluster)"
 }
 
 apply_modified_relay() {
