@@ -27,6 +27,13 @@ spec:
             - containerPort: PORT_NUMBER
               protocol: UDP
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
 ---
 apiVersion: v1
 kind: Service

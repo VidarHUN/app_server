@@ -46,3 +46,5 @@ tests
 deployment/quicrq/secret.yaml
 
 scripts/*.csv
+
+samples/new_video1_source.bin

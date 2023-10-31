@@ -20,7 +20,7 @@ import (
 
 var SERVER = "localhost:8080"
 var PATH = "/room"
-var SRC = "samples/video1_source.bin"
+var SRC = "samples/new_video1_source.bin"
 var QUICRQ = "./quicrq_app"
 var USERID = utils.GenerateRandomID(5)
 var in = bufio.NewReader(os.Stdin)

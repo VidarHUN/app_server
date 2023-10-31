@@ -1,6 +1,6 @@
 quicrq:
-  address: "127.0.0.1"
-  port: 3000
+  address: "34.118.115.7"
+  port: 30900
 
 database:
   address: "127.0.0.1"
