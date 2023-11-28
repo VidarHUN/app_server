@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moq-rs
+spec:
+  selector:
+    matchLabels:
+      app: moq-rs
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: moq-rs
+    spec:
+      volumes:
+        - name: keys-volume
+          secret:
+            secretName: keys
+      containers:
+        - name: moq-rs
+          image: vidarhun/moq-rs
+          volumeMounts:
+            - name: keys-volume
+              mountPath: /certs
+          command: ["moq-relay", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key", "--api", "http://moq-api-svc.default.svc.cluster.local"]
+          ports:
+            - containerPort: 4443
+              protocol: UDP
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moq-rs-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: moq-rs
+  ports:
+    - protocol: UDP
+      port: 4443
+      targetPort: 4443
+
