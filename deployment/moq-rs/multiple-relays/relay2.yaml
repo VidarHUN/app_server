@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moq-rs-2
+spec:
+  selector:
+    matchLabels:
+      app: moq-rs-2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: moq-rs-2
+    spec:
+      volumes:
+        - name: keys-volume
+          secret:
+            secretName: keys
+      containers:
+        - name: moq-rs
+          image: vidarhun/moq-rs
+          volumeMounts:
+            - name: keys-volume
+              mountPath: /certs
+          command: ["moq-relay", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key", "--api", "http://moq-api-svc.default.svc.cluster.local:4442", "--api-node", "https://ricsimoq.stunner.cc:4443", "--tls-disable-verify"]
+          ports:
+            - containerPort: 4443
+              protocol: UDP
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moq-rs-2-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: moq-rs-2
+  ports:
+    - protocol: UDP
+      port: 4443
+      targetPort: 4443
+
