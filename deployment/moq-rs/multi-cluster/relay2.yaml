@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: moq-rs-2
+  name: moq-relay-2
 spec:
   selector:
     matchLabels:
-      app: moq-rs-2
+      app: moq-relay-2
   replicas: 1
   template:
     metadata:
       labels:
-        app: moq-rs-2
+        app: moq-relay-2
     spec:
       volumes:
         - name: keys-volume
@@ -38,11 +38,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: moq-rs-2-svc
+  name: moq-relay-2-svc
 spec:
   type: LoadBalancer
   selector:
-    app: moq-rs-2
+    app: moq-relay-2
   ports:
     - protocol: UDP
       port: 4443

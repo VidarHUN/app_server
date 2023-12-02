@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: moq-relay-2
+  name: moq-api
 spec:
   selector:
     matchLabels:
-      app: moq-relay-2
+      app: moq-api
   replicas: 1
   template:
     metadata:
       labels:
-        app: moq-relay-2
+        app: moq-api
     spec:
       volumes:
         - name: keys-volume
           secret:
             secretName: keys
       containers:
-        - name: moq-rs
+        - name: moq-api
           image: vidarhun/moq-rs
           volumeMounts:
             - name: keys-volume
               mountPath: /certs
-          command: ["moq-relay", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key", "--api", "http://moq-api-svc.default.svc.cluster.local:4442", "--api-node", "https://ricsimoq.stunner.cc:4443", "--tls-disable-verify"]
+          command: ["moq-api", "--listen", "0.0.0.0:4442", "--redis", "redis://redis.default.svc.cluster.local:6379"]
           ports:
-            - containerPort: 4443
-              protocol: UDP
+            - containerPort: 4442
+              protocol: TCP
           imagePullPolicy: Always
           resources:
             requests:
@@ -38,13 +38,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: moq-relay-2-svc
+  name: moq-api-svc
 spec:
-  type: LoadBalancer
   selector:
-    app: moq-relay-2
+    app: moq-api
   ports:
-    - protocol: UDP
-      port: 4443
-      targetPort: 4443
-
+    - protocol: TCP
+      port: 4442
+      targetPort: 4442
+  clusterIP: None
